@@ -23,6 +23,7 @@ export const ItemButton = styled.button`
   font-weight: 700;
   font-size: 15px;
   color: currentColor;
+
   &:hover {
     background-color: #8b0000;
   }

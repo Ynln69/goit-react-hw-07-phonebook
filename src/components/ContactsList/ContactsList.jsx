@@ -1,39 +1,42 @@
+import { toast } from 'react-toastify';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getContacts } from 'redux/contactsSlice';
-import { deleteContact } from 'redux/contactsSlice';
-import { getFilteredContacts } from 'redux/filterSlice';
+
+import { getLoading, getError } from 'redux/selectors';
+import { deleteContact, fetchContacts } from 'redux/operations';
+import { getVisibleContacts } from 'redux/selectors';
+
 import { ListOfContact, Items, ItemButton } from './ContactsList.styled';
 
 const ContactsList = () => {
   const dispatch = useDispatch();
-  const { numbers } = useSelector(getContacts);
-  const filter = useSelector(getFilteredContacts);
+  const isLoading = useSelector(getLoading);
+  const error = useSelector(getError);
 
-  const getVisibleContacts = (contacts, filter) => {
-    const normalizedFilter = filter.toLowerCase();
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
-    );
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
+
+  const visibleContacts = useSelector(getVisibleContacts);
+
+  const handleDelete = contactId => {
+    dispatch(deleteContact(contactId));
+    toast.error('One contact has been deleted');
   };
 
-  const visibleContacts = getVisibleContacts(numbers, filter);
-
-  if (visibleContacts.length === 0) {
-    return <p>You haven't added any contacts yet</p>;
-  }
-
-  return visibleContacts.map(({ id, name, number }) => {
-    return (
-      <ListOfContact key={id}>
-        <Items>
-          {name}: {number}
-          <ItemButton type="button" onClick={() => dispatch(deleteContact(id))}>
+  return (
+    <ListOfContact>
+      {isLoading && !error && <b>Loading...</b>}
+      {visibleContacts.map(({ id, name, phoneNumber }) => (
+        <Items key={id}>
+          {name}:<br /> {phoneNumber}
+          <ItemButton type="button" onClick={() => handleDelete(id)}>
             Delete
           </ItemButton>
         </Items>
-      </ListOfContact>
-    );
-  });
+      ))}
+    </ListOfContact>
+  );
 };
 
 export default ContactsList;
